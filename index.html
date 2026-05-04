@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>GeoHorn - Photo Indépendance Djibouti</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f6f9;
+      text-align: center;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #003366;
+    }
+
+    .box {
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      max-width: 600px;
+      margin: auto;
+      box-shadow: 0 0 15px #ccc;
+    }
+
+    input, button {
+      margin: 10px;
+      padding: 12px 18px;
+      border-radius: 8px;
+      border: none;
+      font-size: 16px;
+    }
+
+    button {
+      background: #0077cc;
+      color: white;
+      cursor: pointer;
+    }
+
+    canvas {
+      max-width: 100%;
+      margin-top: 20px;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="box">
+    <h1>🇩🇯 Crée ta photo spéciale indépendance</h1>
+    <p>Ajoute ta photo et télécharge ton image décorée par GeoHorn.</p>
+
+    <input type="file" id="photoInput" accept="image/*">
+    <br>
+
+    <canvas id="canvas" width="1240" height="1240"></canvas>
+    <br>
+
+    <button onclick="downloadImage()">Télécharger ma photo</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    const template = new Image();
+    template.src = "design.png";
+
+    template.onload = function () {
+      ctx.drawImage(template, 0, 0, canvas.width, canvas.height);
+    };
+
+    document.getElementById("photoInput").addEventListener("change", function (event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+
+      reader.onload = function (e) {
+        const userPhoto = new Image();
+
+        userPhoto.onload = function () {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+          // Dessiner le design
+          ctx.drawImage(template, 0, 0, canvas.width, canvas.height);
+
+          // Zone du cercle au milieu
+          const centerX = 620;
+          const centerY = 565;
+          const radius = 345;
+
+          ctx.save();
+
+          // Découpage en cercle
+          ctx.beginPath();
+          ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+          ctx.closePath();
+          ctx.clip();
+
+          // Recadrage automatique de la photo
+          const size = Math.min(userPhoto.width, userPhoto.height);
+          const sx = (userPhoto.width - size) / 2;
+          const sy = (userPhoto.height - size) / 2;
+
+          ctx.drawImage(
+            userPhoto,
+            sx,
+            sy,
+            size,
+            size,
+            centerX - radius,
+            centerY - radius,
+            radius * 2,
+            radius * 2
+          );
+
+          ctx.restore();
+
+          // Redessiner une petite bordure blanche
+          ctx.beginPath();
+          ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+          ctx.lineWidth = 8;
+          ctx.strokeStyle = "white";
+          ctx.stroke();
+        };
+
+        userPhoto.src = e.target.result;
+      };
+
+      reader.readAsDataURL(file);
+    });
+
+    function downloadImage() {
+      const link = document.createElement("a");
+      link.download = "photo-independance-djibouti-geohorn.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    }
+  </script>
+
+</body>
+</html>
